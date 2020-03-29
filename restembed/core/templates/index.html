@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row">
+    <div class="col-sm-12 text-center">
+        <h4 class="bg-primary text-white p-2" style="margin: 15px;">Internal Accounts</h4>
+    </div>
+</div>
+<div class="row">
+    <div class="col-sm-12">
+        <table id="internal_account" class="table table-striped table-bordered" style="width:100%" data-server-side="true" data-ajax="/api/internal/?format=datatables">
+            <thead>
+                <tr>
+                    <th data-data="accountName">Account Name</th>
+                    <th data-data="sourceId">Source ID</th>
+                    <th data-data="type">Type</th>
+                    <th data-data="productAssociation">Product Association</th>
+                    <th data-data="externalAccountAssociation">External Account Association</th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+</div>
+<div class="row">
+    <div class="col-sm-12 text-center">
+        <h4 class="bg-primary text-white p-2" style="margin: 15px;">External Accounts</h4>
+    </div>
+</div>
+<div class="row">
+    <div class="col-sm-12">
+        <table id="external_account" class="table table-striped table-bordered" style="width:100%" data-server-side="true" data-ajax="/api/external/?format=datatables">
+            <thead>
+                <tr>
+                    <th data-data="accountName">Account Name</th>
+                    <th data-data="exchangeAssociation">Exchange Name</th>
+                    <th data-data="type">Type</th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+</div>
+<footer class="footer" style="margin-top: 25px;">
+    <div class="container">
+        <p class="text-muted text-center">
+            Copyright © 2020 Lonk.com
+        </p>
+    </div>
+</footer>
+{% endblock %}
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    $('#internal_account').DataTable({
+        //lfrtip
+        dom: 'Brtip',
+        buttons: [
+            'copy', 'csv', 'excel', 'pdf'
+        ],
+    });
+    $('#external_account').DataTable({
+        dom: 'Brtip',
+        buttons: [
+            'copy', 'csv', 'excel', 'pdf'
+        ],
+    });
+});
+</script>
+{% endblock %}

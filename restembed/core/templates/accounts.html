@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<table>
+  <tr>
+      <th>Account Name</th>
+      <th>Source Id</th>
+      <th>Type</th>
+      <th>Product</th>
+      <th>External Account</th>
+  </tr>
+{% for account in accounts %}
+    <tr>
+        <td> {{ account.accountName }} </td>
+        <td> {{ account.sourceId }} </td>
+        <td> {{ account.type }} </td>
+        <td> {{ account.productAssociation }} </td>
+        <td> {{ account.externalAccountAssociation }} </td>
+    </tr>
+{% endfor %}
+</table>
+{% endblock %}
