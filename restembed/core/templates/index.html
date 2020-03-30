@@ -2,7 +2,7 @@
 {% block content %}
 <div class="row">
     <div class="col-sm-12 text-center">
-        <h4 class="bg-primary text-white p-2" style="margin: 15px;">Internal Accounts</h4>
+        <h4 class="bg-primary text-white p-2">Internal Accounts</h4>
     </div>
 </div>
 <div class="row">
@@ -22,7 +22,7 @@
 </div>
 <div class="row">
     <div class="col-sm-12 text-center">
-        <h4 class="bg-primary text-white p-2" style="margin: 15px;">External Accounts</h4>
+        <h4 class="bg-primary text-white p-2">External Accounts</h4>
     </div>
 </div>
 <div class="row">
@@ -50,14 +50,22 @@
 <script>
 $(document).ready(function() {
     $('#internal_account').DataTable({
-        //lfrtip
-        dom: 'Brtip',
+        dom:
+            "<'row'<'col-sm-12 col-md-6'B>>" +
+            "<'row'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6'f>>" +
+            "<'row'<'col-sm-12'tr>>" +
+            "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
+
         buttons: [
             'copy', 'csv', 'excel', 'pdf'
         ],
     });
     $('#external_account').DataTable({
-        dom: 'Brtip',
+        dom:
+            "<'row'<'col-sm-12 col-md-6'B>>" +
+            "<'row'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6'f>>" +
+            "<'row'<'col-sm-12'tr>>" +
+            "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
         buttons: [
             'copy', 'csv', 'excel', 'pdf'
         ],

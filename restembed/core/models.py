@@ -4,7 +4,7 @@ from django.db import models
 
 
 class InternalAccount(models.Model):
-    accountName = models.CharField(max_length=100)
+    accountName = models.CharField(max_length=100, primary_key=True)
     sourceId = models.CharField(max_length=100)
     type = models.CharField(max_length=100)
     productAssociation = models.CharField(max_length=100)
@@ -13,9 +13,8 @@ class InternalAccount(models.Model):
     def __str__(self):
         return self.accountName
 
-
 class ExternalAccount(models.Model):
-    accountName = models.CharField(max_length=100)
+    accountName = models.CharField(max_length=100, primary_key=True)
     type = models.CharField(max_length=100)
     exchangeAssociation = models.CharField(max_length=100)
 
