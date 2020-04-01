@@ -1,4 +1,5 @@
 from django.db import models
+from jsonfield import JSONField
 
 # Create your models here.
 
@@ -13,6 +14,7 @@ class InternalAccount(models.Model):
     def __str__(self):
         return self.accountName
 
+
 class ExternalAccount(models.Model):
     accountName = models.CharField(max_length=100, primary_key=True)
     type = models.CharField(max_length=100)
@@ -20,3 +22,9 @@ class ExternalAccount(models.Model):
 
     def __str__(self):
         return self.accountName
+
+
+class AccountBalance(models.Model):
+    accountName = models.CharField(max_length=100, primary_key=True)
+    type = models.CharField(max_length=100)
+    instruments = JSONField()

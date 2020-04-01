@@ -1,8 +1,9 @@
 from itertools import chain
 
 from django.shortcuts import render
-
+from django.conf import settings
 from rest_framework import viewsets
+from rest_framework.response import Response
 import requests
 
 from .serializer import ExternalAccountSerializer, InternalAccountSerializer
@@ -15,9 +16,8 @@ def index(request):
 
 
 def get_internal_queryset():
-    r = requests.get('http://sunyi-lonk-spec.herokuapp.com/accounts/internal')
+    r = requests.get(settings.EXTERNAL_API_URL + 'accounts/internal')
     json = r.json()
-    #print(json)
     serializer = InternalAccountSerializer(data=json, many=True)
     print(serializer.is_valid())
     serializer.save()
@@ -25,7 +25,7 @@ def get_internal_queryset():
 
 
 def get_external_queryset():
-    r = requests.get('http://sunyi-lonk-spec.herokuapp.com/accounts/external')
+    r = requests.get(settings.EXTERNAL_API_URL + 'accounts/external')
     json = r.json()
     serializer = ExternalAccountSerializer(data=json, many=True)
     print(serializer.is_valid())
@@ -41,3 +41,11 @@ class InternalAccountViewSet(viewsets.ModelViewSet):
 class ExternalAccountViewSet(viewsets.ModelViewSet):
     queryset = get_external_queryset()
     serializer_class = ExternalAccountSerializer
+
+
+class AccountBalanceViewSet(viewsets.ViewSet):
+    def list(self, request):
+        r = requests.get(settings.EXTERNAL_API_URL + 'account_balance')
+        json = r.json()
+        print(json)
+        return Response(json)

@@ -150,4 +150,6 @@ REST_FRAMEWORK = {
     'PAGE_SIZE': 50,
 }
 
+EXTERNAL_API_URL = 'http://sunyi-lonk-spec.herokuapp.com/'
+
 django_heroku.settings(locals())
