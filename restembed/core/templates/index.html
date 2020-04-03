@@ -1,6 +1,17 @@
 {% extends "base.html" %}
 {% block content %}
 
+<style> td.details-control {
+            text-align:center;
+            color:forestgreen;
+    cursor: pointer;
+}
+tr.shown td.details-control {
+    text-align:center;
+    color:red;
+} </style>
+
+
 <div class="row">
     <div class="col-sm-12 text-center">
         <h4 class="bg-primary text-white p-2">Account Balance</h4>
