@@ -6,9 +6,9 @@ from rest_framework import viewsets
 from rest_framework.response import Response
 import requests
 
-from .serializer import ExternalAccountSerializer, InternalAccountSerializer
+from .serializer import AccountBalanceSerializer, ExternalAccountSerializer, InternalAccountSerializer
 
-from .models import ExternalAccount, InternalAccount
+from .models import AccountBalance, ExternalAccount, InternalAccount
 
 
 def index(request):
@@ -20,6 +20,7 @@ def get_internal_queryset():
     json = r.json()
     serializer = InternalAccountSerializer(data=json, many=True)
     print(serializer.is_valid())
+    print(serializer.errors)
     serializer.save()
     return InternalAccount.objects.all()
 
@@ -29,8 +30,20 @@ def get_external_queryset():
     json = r.json()
     serializer = ExternalAccountSerializer(data=json, many=True)
     print(serializer.is_valid())
+    print(serializer.errors)
     serializer.save()
     return ExternalAccount.objects.all()
+
+
+def get_balance_queryset():
+    r = requests.get(settings.EXTERNAL_API_URL + 'account_balance')
+    json = r.json()
+    print(json)
+    serializer = AccountBalanceSerializer(data=json, many=True)
+    print(serializer.is_valid())
+    print(serializer.errors)
+    serializer.save()
+    return AccountBalance.objects.all()
 
 
 class InternalAccountViewSet(viewsets.ModelViewSet):
@@ -43,9 +56,12 @@ class ExternalAccountViewSet(viewsets.ModelViewSet):
     serializer_class = ExternalAccountSerializer
 
 
-class AccountBalanceViewSet(viewsets.ViewSet):
-    def list(self, request):
-        r = requests.get(settings.EXTERNAL_API_URL + 'account_balance')
-        json = r.json()
-        print(json)
-        return Response(json)
+class AccountBalanceViewSet(viewsets.ModelViewSet):
+    queryset = get_balance_queryset()
+    serializer_class = AccountBalanceSerializer
+# class AccountBalanceViewSet(viewsets.ViewSet):
+#     def list(self, request):
+#         r = requests.get(settings.EXTERNAL_API_URL + 'account_balance')
+#         json = r.json()
+#         print(json)
+#         return Response(json)
