@@ -1,6 +1,7 @@
 # Package Files #
 */__pycache__/*
 */*/__pycache__/*
+*/*/*/__pycache__/*
 *.jar
 *.war
 *.nar
