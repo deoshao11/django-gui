@@ -24,8 +24,8 @@ def get_internal_queryset():
     serializer = InternalAccountSerializer(data=json, many=True)
     if not serializer.is_valid():
         print(serializer.errors)
-    #serializer.save()
-    return InternalAccount.objects.all()
+    serializer.save()
+    return InternalAccount.objects.all().filter(requestUuid=request_uuid)
 
 
 def get_external_queryset():
@@ -38,8 +38,8 @@ def get_external_queryset():
     serializer = ExternalAccountSerializer(data=json, many=True)
     if not serializer.is_valid():
         print(serializer.errors)
-    #serializer.save()
-    return ExternalAccount.objects.all()
+    serializer.save()
+    return ExternalAccount.objects.all().filter(requestUuid=request_uuid)
 
 
 def get_balance_queryset():
@@ -52,8 +52,8 @@ def get_balance_queryset():
     serializer = AccountBalanceSerializer(data=json, many=True)
     if not serializer.is_valid():
         print(serializer.errors)
-    #serializer.save()
-    return AccountBalance.objects.all()
+    serializer.save()
+    return AccountBalance.objects.all().filter(requestUuid=request_uuid)
 
 
 class InternalAccountViewSet(viewsets.ModelViewSet):
@@ -69,9 +69,3 @@ class ExternalAccountViewSet(viewsets.ModelViewSet):
 class AccountBalanceViewSet(viewsets.ModelViewSet):
     queryset = get_balance_queryset()
     serializer_class = AccountBalanceSerializer
-# class AccountBalanceViewSet(viewsets.ViewSet):
-#     def list(self, request):
-#         r = requests.get(settings.EXTERNAL_API_URL + 'account_balance')
-#         json = r.json()
-#         print(json)
-#         return Response(json)
