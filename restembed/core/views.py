@@ -20,7 +20,6 @@ def get_internal_queryset():
     json = r.json()
     for i in range(len(json)):
         json[i]['requestUuid'] = request_uuid
-    print(json)
     serializer = InternalAccountSerializer(data=json, many=True)
     if not serializer.is_valid():
         print(serializer.errors)
@@ -34,7 +33,6 @@ def get_external_queryset():
     request_uuid = uuid.uuid4()
     for i in range(len(json)):
         json[i]['requestUuid'] = request_uuid
-    print(json)
     serializer = ExternalAccountSerializer(data=json, many=True)
     if not serializer.is_valid():
         print(serializer.errors)
@@ -48,7 +46,6 @@ def get_balance_queryset():
     request_uuid = uuid.uuid4()
     for i in range(len(json)):
         json[i]['requestUuid'] = request_uuid
-    print(json)
     serializer = AccountBalanceSerializer(data=json, many=True)
     if not serializer.is_valid():
         print(serializer.errors)

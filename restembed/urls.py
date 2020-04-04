@@ -14,18 +14,21 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path
 from django.conf.urls import url, include
 from .core.views import AccountBalanceViewSet, ExternalAccountViewSet, InternalAccountViewSet, index
 
+from django.contrib.auth.views import LoginView, LogoutView
 from rest_framework import routers
+
 router = routers.DefaultRouter()
 router.register(r'internal', InternalAccountViewSet, basename='internal_account')
 router.register(r'external', ExternalAccountViewSet, basename='external_account')
 router.register(r'balance', AccountBalanceViewSet, basename='account_balance')
 
 urlpatterns = [
-    # path('admin/', admin.site.urls),
     url('^api/', include(router.urls)),
-    url('', index, name='index')
+    url(r'^$', index, name='index'),
+    url(r'^login/$', LoginView.as_view(template_name="login.html"), name='login'),
+    url(r'^logout/$', LogoutView, name='logout'),
+    url(r'^admin/', admin.site.urls),
 ]
