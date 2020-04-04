@@ -5,13 +5,13 @@ from .models import AccountBalance, InternalAccount, ExternalAccount
 class InternalAccountSerializer(serializers.ModelSerializer):
     class Meta:
         model = InternalAccount
-        fields = ('accountName', 'sourceId', 'type', 'productAssociation', 'externalAccountAssociation')
+        fields = '__all__'
 
 
 class ExternalAccountSerializer(serializers.ModelSerializer):
     class Meta:
         model = ExternalAccount
-        fields = ('accountName', 'type', 'exchangeAssociation')
+        fields = '__all__'
 
 
 class AccountBalanceSerializer(serializers.ModelSerializer):
@@ -19,4 +19,4 @@ class AccountBalanceSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = AccountBalance
-        fields = ('accountName', 'instruments', 'type')
+        fields = '__all__'
