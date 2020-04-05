@@ -17,7 +17,7 @@ def index(request):
 def get_internal_queryset(request):
     username = request.user.username
     print(username)
-    r = requests.get(settings.EXTERNAL_API_URL + 'accounts/internal', headers={'x-encrypted-username': username},)
+    r = requests.get(settings.EXTERNAL_API_URL + 'accounts/internal', headers={'x-username': username},)
     json = r.json()
     request_uuid = uuid.uuid4()
     for i in range(len(json)):
@@ -31,7 +31,7 @@ def get_internal_queryset(request):
 
 def get_external_queryset(request):
     username = request.user.username
-    r = requests.get(settings.EXTERNAL_API_URL + 'accounts/external', headers={'x-encrypted-username': username},)
+    r = requests.get(settings.EXTERNAL_API_URL + 'accounts/external', headers={'x-username': username},)
     json = r.json()
     request_uuid = uuid.uuid4()
     for i in range(len(json)):
@@ -45,7 +45,7 @@ def get_external_queryset(request):
 
 def get_balance_queryset(request):
     username = request.user.username
-    r = requests.get(settings.EXTERNAL_API_URL + 'account_balance', headers={'x-encrypted-username': username},)
+    r = requests.get(settings.EXTERNAL_API_URL + 'account_balance', headers={'x-username': username},)
     json = r.json()
     request_uuid = uuid.uuid4()
     for i in range(len(json)):
