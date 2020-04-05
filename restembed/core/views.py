@@ -14,10 +14,12 @@ def index(request):
     return render(request, 'index.html')
 
 
-def get_internal_queryset():
-    r = requests.get(settings.EXTERNAL_API_URL + 'accounts/internal')
-    request_uuid = uuid.uuid4()
+def get_internal_queryset(request):
+    username = request.user.username
+    print(username)
+    r = requests.get(settings.EXTERNAL_API_URL + 'accounts/internal', headers={'x-encrypted-username': username},)
     json = r.json()
+    request_uuid = uuid.uuid4()
     for i in range(len(json)):
         json[i]['requestUuid'] = request_uuid
     serializer = InternalAccountSerializer(data=json, many=True)
@@ -27,8 +29,9 @@ def get_internal_queryset():
     return InternalAccount.objects.all().filter(requestUuid=request_uuid)
 
 
-def get_external_queryset():
-    r = requests.get(settings.EXTERNAL_API_URL + 'accounts/external')
+def get_external_queryset(request):
+    username = request.user.username
+    r = requests.get(settings.EXTERNAL_API_URL + 'accounts/external', headers={'x-encrypted-username': username},)
     json = r.json()
     request_uuid = uuid.uuid4()
     for i in range(len(json)):
@@ -40,8 +43,9 @@ def get_external_queryset():
     return ExternalAccount.objects.all().filter(requestUuid=request_uuid)
 
 
-def get_balance_queryset():
-    r = requests.get(settings.EXTERNAL_API_URL + 'account_balance')
+def get_balance_queryset(request):
+    username = request.user.username
+    r = requests.get(settings.EXTERNAL_API_URL + 'account_balance', headers={'x-encrypted-username': username},)
     json = r.json()
     request_uuid = uuid.uuid4()
     for i in range(len(json)):
@@ -54,15 +58,21 @@ def get_balance_queryset():
 
 
 class InternalAccountViewSet(viewsets.ModelViewSet):
-    queryset = get_internal_queryset()
     serializer_class = InternalAccountSerializer
+
+    def get_queryset(self):
+        return get_internal_queryset(self.request)
 
 
 class ExternalAccountViewSet(viewsets.ModelViewSet):
-    queryset = get_external_queryset()
     serializer_class = ExternalAccountSerializer
+
+    def get_queryset(self):
+        return get_external_queryset(self.request)
 
 
 class AccountBalanceViewSet(viewsets.ModelViewSet):
-    queryset = get_balance_queryset()
     serializer_class = AccountBalanceSerializer
+
+    def get_queryset(self):
+        return get_balance_queryset(self.request)
