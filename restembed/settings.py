@@ -152,6 +152,7 @@ REST_FRAMEWORK = {
 
 EXTERNAL_API_URL = 'http://sunyi-lonk-spec.herokuapp.com/'
 
-LOGIN_REDIRECT_URL = 'index'
+LOGIN_REDIRECT_URL = '/'
+LOGOUT_REDIRECT_URL = '/'
 
 django_heroku.settings(locals())
