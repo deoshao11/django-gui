@@ -109,7 +109,14 @@ tr.shown td.details-control {
 <script>
 function format ( d ) {
     // `d` is the original data object for the row
-    var result = '<table cellpadding="5" cellspacing="0" border="0" style="padding-left:50px;">';
+    var result = '<div class="row"><div class="col-sm-12"><table class="table table-striped table-bordered" style="width:100%">';
+    result += getRow(d);
+    result += '</div></div></table>';
+    return result;
+}
+
+function getRow ( d ) {
+    var result = '';
     for (x in d) {
         if ( typeof d[x] != 'string' ) {
             for ( y in d[x] ) {
@@ -119,18 +126,34 @@ function format ( d ) {
             result += '<tr><td>' + x + ':</td><td>' + d[x] + '</td></tr>';
         }
     }
-    result += '</table>';
     return result;
 }
 
-$(function () {
-    $("#maincontent > div:gt(0)").hide();
-    $("#menu a").on("click", function (e) {
-        var href = $(this).attr("href");
-        $("#maincontent > " + href).show();
-        $("#maincontent > :not(" + href + ")").hide();
-    });
-});
+function child ( d ) {
+    // `d` is the original data object for the table
+    var result = '<div class="row"><div class="col-sm-12"><table class="table table-striped table-bordered" style="width:100%">';
+    var i;
+    var fieldNameElement = document.getElementById('maincontent');
+    var content = '<div class="row"><div class="col-sm-12"><table class="table table-striped table-bordered" style="width:100%">';
+    for (i=0; i<5; i++) {
+        result += '<tr><td>' + d[i]["accountName"] + '</td></tr>';
+        content += getRow(d[i]);
+    }
+    content += '</div></div></table>';
+    result += '</div></div></table>';
+
+    fieldNameElement.innerHTML = content;
+    return result;
+}
+
+function filterByName (name, d) {
+    for (i=0; i<d.length; i++) {
+        if(d[i]["accountName"] === name) {
+            return d[i];
+        }
+    }
+    return d[0];
+}
 
 $(document).ready(function() {
     var balance_table = $('#account_balance').DataTable({
@@ -196,7 +219,7 @@ $(document).ready(function() {
         }
         else {
             // Open this row
-            row.child( format(row.data()) ).show();
+            row.child( child(balance_table.data()) ).show();
             tr.addClass('shown');
             tdi.first().removeClass('fa-plus-square');
             tdi.first().addClass('fa-minus-square');
@@ -219,7 +242,8 @@ $(document).ready(function() {
         buttons: [
             'copy', 'csv', 'excel', 'pdf'
         ],
-    });
+    } );
 });
+
 </script>
 {% endblock %}
