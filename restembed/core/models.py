@@ -11,6 +11,8 @@ class InternalAccount(models.Model):
     productAssociation = models.CharField(max_length=100)
     externalAccountAssociation = models.CharField(max_length=100)
     requestUuid = models.UUIDField()
+    children = JSONField()
+    isChildAccount = models.BooleanField()
 
     def __str__(self):
         return self.accountName

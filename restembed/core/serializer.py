@@ -3,6 +3,8 @@ from .models import AccountBalance, InternalAccount, ExternalAccount
 
 
 class InternalAccountSerializer(serializers.ModelSerializer):
+    children = serializers.JSONField()
+
     class Meta:
         model = InternalAccount
         fields = '__all__'
