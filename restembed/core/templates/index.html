@@ -12,6 +12,42 @@ tr.shown td.details-control {
     color:red;
 }
 
+/* Style the tab */
+.tab {
+  overflow: hidden;
+  border: 1px solid #ccc;
+  background-color: #f1f1f1;
+}
+
+/* Style the buttons inside the tab */
+.tab button {
+  background-color: inherit;
+  float: left;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  padding: 14px 16px;
+  transition: 0.3s;
+  font-size: 17px;
+}
+
+/* Change background color of buttons on hover */
+.tab button:hover {
+  background-color: #ddd;
+}
+
+/* Create an active/current tablink class */
+.tab button.active {
+  background-color: #ccc;
+}
+
+/* Style the tab content */
+.tabcontent {
+  padding: 6px 12px;
+  border: 1px solid #ccc;
+  border-top: none;
+}
+
 #internal_account_details, #external_account_details {
     float: right;
     width: 100%;
@@ -47,53 +83,54 @@ tr.shown td.details-control {
     </div>
 </div>
 
-<div class="row">
-    <div class="col-sm-12 text-center">
-        <h4 class="bg-primary text-white p-2">Internal Accounts</h4>
-    </div>
+<div class="tab">
+  <button class="tablinks" onclick="openAccountView(event, 'internal')">Internal Accounts</button>
+  <button class="tablinks" onclick="openAccountView(event, 'external')">External Accounts</button>
 </div>
-<div class="row">
-    <div id="internal_page">
-        <div class="col-sm-12">
-            <div id="internal_leftcontent">
-                <table id="internal_account" class="table table-striped table-bordered">
-                    <thead>
-                        <tr>
-                            <th></th>
-                            <th>Account Name</th>
-                        </tr>
-                    </thead>
-                </table>
+
+<div id="internal" class="tabcontent">
+    <div class="row">
+        <div id="internal_page">
+            <div class="col-sm-12">
+                <div id="internal_leftcontent">
+                    <table id="internal_account" class="table table-striped table-bordered">
+                        <thead>
+                            <tr>
+                                <th></th>
+                                <th>Account Name</th>
+                            </tr>
+                        </thead>
+                    </table>
+                </div>
+            </div>
+            <div class="col-sm-12">
+                <div id="internal_account_details"><h4>Internal Account Details</h4></div>
             </div>
         </div>
-        <div class="col-sm-12">
-            <div id="internal_account_details">account details</div>
-        </div>
     </div>
 </div>
-<div class="row">
-    <div class="col-sm-12 text-center">
-        <h4 class="bg-primary text-white p-2">External Accounts</h4>
-    </div>
-</div>
-<div class="row">
-    <div id="external_page">
-        <div class="col-sm-12">
-            <div id="external_leftcontent">
-                <table id="external_account" class="table table-striped table-bordered">
-                    <thead>
-                        <tr>
-                            <th>Account Name</th>
-                        </tr>
-                    </thead>
-                </table>
+
+<div id="external" class="tabcontent">
+    <div class="row">
+        <div id="external_page">
+            <div class="col-sm-12">
+                <div id="external_leftcontent">
+                    <table id="external_account" class="table table-striped table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Account Name</th>
+                            </tr>
+                        </thead>
+                    </table>
+                </div>
+            </div>
+            <div class="col-sm-12">
+                <div id="external_account_details"><h4>External Account Details</h4></div>
             </div>
         </div>
-        <div class="col-sm-12">
-            <div id="external_account_details">account details</div>
-        </div>
     </div>
 </div>
+
 <footer class="footer" style="margin-top: 25px;">
     <div class="container">
         <p class="text-muted text-center">
@@ -104,6 +141,20 @@ tr.shown td.details-control {
 {% endblock %}
 {% block extra_js %}
 <script>
+function openAccountView(evt, accountName) {
+  var i, tabcontent, tablinks;
+  tabcontent = document.getElementsByClassName("tabcontent");
+  for (i = 0; i < tabcontent.length; i++) {
+    tabcontent[i].style.display = "none";
+  }
+  tablinks = document.getElementsByClassName("tablinks");
+  for (i = 0; i < tablinks.length; i++) {
+    tablinks[i].className = tablinks[i].className.replace(" active", "");
+  }
+  document.getElementById(accountName).style.display = "block";
+  evt.currentTarget.className += " active";
+}
+
 function format ( d ) {
     // `d` is the original data object for the row
     var result = '<div class="row"><div class="col-sm-12"><table class="table table-striped table-bordered" style="width:100%">';
