@@ -12,7 +12,7 @@ class InternalAccount(models.Model):
     externalAccountAssociation = models.CharField(max_length=100)
     requestUuid = models.UUIDField()
     children = JSONField()
-    isChildAccount = models.BooleanField()
+    hasParents = models.BooleanField()
 
     def __str__(self):
         return self.accountName
