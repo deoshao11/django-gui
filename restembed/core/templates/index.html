@@ -104,7 +104,31 @@ tr.shown td.details-control {
                 </div>
             </div>
             <div class="col-sm-12">
-                <div id="internal_account_details"><h4>Internal Account Details</h4></div>
+                <div id="internal_account_details">
+                    <h4>Internal Account Details</h4>
+                    <h5>Account Profile</h5>
+                    <table id="internal_account_static" class="table table-striped table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Account Name</th>
+                                <th>Source ID</th>
+                                <th>Type</th>
+                                <th>Product Association</th>
+                                <th>External Account Association</th>
+                            </tr>
+                        </thead>
+                    </table>
+                    <p></p>
+                    <h5>Account Balance</h5>
+                    <table id="internal_account_balance" class="table table-striped table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Instrument</th>
+                                <th>Amount</th>
+                            </tr>
+                        </thead>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
@@ -125,7 +149,29 @@ tr.shown td.details-control {
                 </div>
             </div>
             <div class="col-sm-12">
-                <div id="external_account_details"><h4>External Account Details</h4></div>
+                <div id="external_account_details">
+                    <h4>External Account Details</h4>
+                    <h5>Account Profile</h5>
+                    <table id="external_account_static" class="table table-striped table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Account Name</th>
+                                <th>Type</th>
+                                <th>Exchange Association</th>
+                            </tr>
+                        </thead>
+                    </table>
+                    <p></p>
+                    <h5>Account Balance</h5>
+                    <table id="external_account_balance" class="table table-striped table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Instrument</th>
+                                <th>Balance</th>
+                            </tr>
+                        </thead>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
@@ -209,7 +255,19 @@ function child ( d ) {
     return result;
 }
 
-function filterByName (name, d) {
+function parseInstrument ( d ) {
+    var result = [];
+    for ( x in d["instruments"] ) {
+        var row = {};
+        row["instrument"] = x;
+        row["balance"] = d["instruments"][x];
+        console.log(row);
+        result.push(row);
+    }
+    return result;
+}
+
+function filterByName ( name, d ) {
     for (i=0; i<d.length; i++) {
         if(d[i]["accountName"] === name) {
             return d[i];
@@ -283,6 +341,32 @@ $(document).ready(function() {
 
     });
 
+    var internal_account_static = $('#internal_account_static').DataTable({
+        "paging": false,
+        dom:
+            "<'row'<'col-sm-12'tr>>" +
+            "<<'col-sm-12 col-md-7'p>>",
+        "columns": [
+            { "data": "accountName" },
+            { "data": "sourceId" },
+            { "data": "type" },
+            { "data": "productAssociation" },
+            { "data": "externalAccountAssociation" },
+        ]
+    } );
+
+    var internal_account_balance = $('#internal_account_balance').DataTable({
+        "paging": false,
+        dom:
+            "<'row'<'col-sm-12 col-md-6'f>>" +
+            "<'row'<'col-sm-12'tr>>" +
+            "<<'col-sm-12 col-md-7'p>>",
+        "columns": [
+            { "data": "instrument" },
+            { "data": "balance" },
+        ]
+    } );
+
     $('#internal_account tbody').on('click', 'td.details-control', function () {
         var tr = $(this).closest('tr');
         var tdi = tr.find("i.fa");
@@ -298,13 +382,19 @@ $(document).ready(function() {
         else {
             // Open this row
             row.child( showChildren( row.data()) ).show();
-            var fieldNameElement = document.getElementById('internal_account_details');
-            var result = '';
+            internal_account_static.clear().draw();
+            internal_account_balance.clear().draw();
             for (var i=0; i < row.data()['children'].length; i++) {
-                var account_row = filterByName(row.data()['children'][i], internal_account_table.data());
-                result += format(detailTable(account_row, balance_table.data()));
+                var info_row = filterByName(row.data()['children'][i], internal_account_table.data());
+                internal_account_static.row.add(info_row);
+
+                var bal_rows = parseInstrument(filterByName(row.data()['children'][i], balance_table.data()));
+                for ( d in bal_rows ) {
+                    internal_account_balance.row.add(bal_rows[d]);
+                }
             }
-            fieldNameElement.innerHTML = result;
+            internal_account_static.draw();
+            internal_account_balance.draw();
             tr.addClass('shown');
             tdi.first().removeClass('fa-plus-square');
             tdi.first().addClass('fa-minus-square');
@@ -314,8 +404,16 @@ $(document).ready(function() {
     $('#internal_account tbody').on('click', 'td.account-click', function () {
         var tr = $(this).closest('tr');
         var row = internal_account_table.row( tr );
-        var fieldNameElement = document.getElementById('internal_account_details');
-        fieldNameElement.innerHTML = format(detailTable(row.data(), balance_table.data()));
+        var data = JSON.parse(JSON.stringify(row.data()));
+        internal_account_static.clear().draw();
+        internal_account_static.row.add(data).draw();
+
+        internal_account_balance.clear().draw();
+        var bal_rows = parseInstrument(filterByName(row.data()["accountName"], balance_table.data()));
+        for ( d in bal_rows ) {
+            internal_account_balance.row.add(bal_rows[d]);
+        }
+        internal_account_balance.draw();
     } );
 
     var external_account_table = $('#external_account').DataTable({
@@ -338,11 +436,44 @@ $(document).ready(function() {
         ],
     } );
 
+    var external_account_static = $('#external_account_static').DataTable({
+        "paging": false,
+        dom:
+            "<'row'<'col-sm-12'tr>>" +
+            "<<'col-sm-12 col-md-7'p>>",
+        "columns": [
+            { "data": "accountName" },
+            { "data": "type" },
+            { "data": "exchangeAssociation" },
+        ]
+    } );
+
+    var external_account_balance = $('#external_account_balance').DataTable({
+        "paging": false,
+        dom:
+            "<'row'<'col-sm-12 col-md-6'f>>" +
+            "<'row'<'col-sm-12'tr>>" +
+            "<<'col-sm-12 col-md-7'p>>",
+        "columns": [
+            { "data": "instrument" },
+            { "data": "balance" },
+        ]
+    } );
+
     $('#external_account tbody').on('click', 'td.account-click', function () {
         var tr = $(this).closest('tr');
         var row = external_account_table.row( tr );
-        var fieldNameElement = document.getElementById('external_account_details');
-        fieldNameElement.innerHTML = format(detailTable(row.data(), balance_table.data()));
+        var data = JSON.parse(JSON.stringify(row.data()));
+        external_account_static.clear().draw();
+        external_account_static.row.add(data).draw();
+
+        var balance_row = filterByName(row.data()["accountName"], balance_table.data());
+        external_account_balance.clear().draw();
+        var bal_rows = parseInstrument(balance_row);
+        for ( d in bal_rows ) {
+            external_account_balance.row.add(bal_rows[d]);
+        }
+        external_account_balance.draw();
     } );
 });
 
