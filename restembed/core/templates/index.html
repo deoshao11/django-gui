@@ -93,6 +93,7 @@ tr.shown td.details-control {
         <div id="internal_page">
             <div class="col-sm-12">
                 <div id="internal_leftcontent">
+                    <div id="internal_jstree"></div>
                     <table id="internal_account" class="table table-striped table-bordered">
                         <thead>
                             <tr>
@@ -261,13 +262,14 @@ function parseInstrument ( d ) {
         var row = {};
         row["instrument"] = x;
         row["balance"] = d["instruments"][x];
-        console.log(row);
+        //console.log(row);
         result.push(row);
     }
     return result;
 }
 
 function filterByName ( name, d ) {
+    //console.log("filter by name with length", name, d.length);
     for (i=0; i<d.length; i++) {
         if(d[i]["accountName"] === name) {
             return d[i];
@@ -276,8 +278,58 @@ function filterByName ( name, d ) {
     return d[0];
 }
 
+function createTreeNodeID ( accountName ) {
+    return accountName.replace(/\s/g, '_').toLowerCase();
+}
+
+function recursiveTreeNode ( tree_id, parent_id, acct_name, dict ) {
+    var node_id = createTreeNodeID(acct_name);
+    console.log("creating node id: ", node_id);
+    createNode(tree_id, parent_id, node_id, acct_name, "last");
+    if ( dict[acct_name]["children"].length === 0 ) {
+        return;
+    }
+    for (i = 0; i < dict[acct_name]["children"].length; i++) {
+        //recursiveTreeNode(tree_id, node_id, dict[acct_name]["children"][i], dict);
+        var child_id = createTreeNodeID(dict[acct_name]["children"][i]);
+        console.log(node_id, child_id);
+        createNode(tree_id, "#base_directory", child_id, dict[acct_name]["children"][i], "last");
+    }
+}
+
+function renderTreeAccounts ( tree_id, d ) {
+    //console.log("filter by hasParents with length", name, d.length);
+    //var dict = {};
+    //for (i=0; i<d.length; i++) {
+    //    dict[d[i]["accountName"]] = d[i];
+    //}
+
+    for (i=0; i<d.length; i++) {
+        //console.log(d[i]["hasParents"], d[i]["accountName"]);
+        if(d[i]["hasParents"] === true) {
+            continue;
+        }
+        //recursiveTreeNode(tree_id, "#base_directory", d[i]["accountName"], dict);
+        var node_id = createTreeNodeID(d[i]["accountName"]);
+        createNode(tree_id, tree_id, node_id, d[i]["accountName"], "last");
+        var child_id = createTreeNodeID(d[i]["children"][0]);
+        createNode(tree_id, "#"+node_id, child_id, d[i]["children"][0], "last");
+        //createNode(tree_id, "#base_directory", child_id, d[i]["children"][0], "last");
+        //console.log(dict[d[i]["accountName"]]["children"][0]);
+    }
+}
+
+// Helper method createNode(parent, id, text, position).
+// Dynamically adds nodes to the jsTree. Position can be 'first' or 'last'.
+function createNode(tree_id, parent_node, new_node_id, new_node_text, position) {
+    console.log("creating node with parent node name: ", parent_node, " child node: ", new_node_id);
+    $(tree_id).jstree('create_node', $(parent_node), { "text":new_node_text, "id":new_node_id }, position, false, false);
+}
+
 $(document).ready(function() {
     $('#account_balance').wrap('<div id="hide" style="display:none"/>');
+    $('#internal_account').wrap('<div id="hide" style="display:none"/>');
+    //$('#external_account').wrap('<div id="hide" style="display:none"/>');
     var balance_table = $('#account_balance').DataTable({
         dom:
             "<'row'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6'f>>" +
@@ -337,7 +389,11 @@ $(document).ready(function() {
             if (data["hasParents"] === true) {
                 $(row).hide();
             }
-        }
+        },
+
+        "initComplete": function( settings, json ) {
+            renderTreeAccounts("#internal_jstree", internal_account_table.data());
+        },
 
     });
 
@@ -415,6 +471,36 @@ $(document).ready(function() {
         }
         internal_account_balance.draw();
     } );
+
+    $('#internal_jstree').jstree({
+        //'plugins': ["checkbox", "state"],
+        //'plugins': ["search"],
+        'core': {
+            //'data': [{
+            //    "id": "base_directory",
+            //        "text": "Internal Account List",
+            //        "children": []
+            //}],
+            'data': [],
+            'check_callback': true
+        }
+    });
+
+    $('#internal_jstree').on("changed.jstree", function (e, data) {
+        var accountName = $('#internal_jstree').jstree('get_selected', true)[0].text;
+        console.log("pulling account detail for ", accountName);
+        var data = filterByName(accountName, internal_account_table.data());
+
+        internal_account_static.clear().draw();
+        internal_account_static.row.add(data).draw();
+
+        internal_account_balance.clear().draw();
+        var bal_rows = parseInstrument(filterByName(accountName, balance_table.data()));
+        for ( d in bal_rows ) {
+            internal_account_balance.row.add(bal_rows[d]);
+        }
+        internal_account_balance.draw();
+    });
 
     var external_account_table = $('#external_account').DataTable({
         "paging": false,
