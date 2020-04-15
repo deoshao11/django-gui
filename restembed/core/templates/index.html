@@ -97,7 +97,6 @@ tr.shown td.details-control {
                     <table id="internal_account" class="table table-striped table-bordered">
                         <thead>
                             <tr>
-                                <th></th>
                                 <th>Account Name</th>
                             </tr>
                         </thead>
@@ -140,6 +139,7 @@ tr.shown td.details-control {
         <div id="external_page">
             <div class="col-sm-12">
                 <div id="external_leftcontent">
+                    <div id="external_jstree"></div>
                     <table id="external_account" class="table table-striped table-bordered">
                         <thead>
                             <tr>
@@ -284,52 +284,38 @@ function createTreeNodeID ( accountName ) {
 
 function recursiveTreeNode ( tree_id, parent_id, acct_name, dict ) {
     var node_id = createTreeNodeID(acct_name);
-    console.log("creating node id: ", node_id);
     createNode(tree_id, parent_id, node_id, acct_name, "last");
-    if ( dict[acct_name]["children"].length === 0 ) {
-        return;
-    }
-    for (i = 0; i < dict[acct_name]["children"].length; i++) {
-        //recursiveTreeNode(tree_id, node_id, dict[acct_name]["children"][i], dict);
-        var child_id = createTreeNodeID(dict[acct_name]["children"][i]);
-        console.log(node_id, child_id);
-        createNode(tree_id, "#base_directory", child_id, dict[acct_name]["children"][i], "last");
+    if ( "children" in dict[acct_name] ) {
+        for (var i = 0; i < dict[acct_name]["children"].length; i++) {
+            recursiveTreeNode(tree_id, "#"+node_id, dict[acct_name]["children"][i], dict);
+        }
     }
 }
 
 function renderTreeAccounts ( tree_id, d ) {
-    //console.log("filter by hasParents with length", name, d.length);
-    //var dict = {};
-    //for (i=0; i<d.length; i++) {
-    //    dict[d[i]["accountName"]] = d[i];
-    //}
+    var dict = {};
+    for (i=0; i<d.length; i++) {
+        dict[d[i]["accountName"]] = d[i];
+    }
 
     for (i=0; i<d.length; i++) {
-        //console.log(d[i]["hasParents"], d[i]["accountName"]);
         if(d[i]["hasParents"] === true) {
             continue;
         }
-        //recursiveTreeNode(tree_id, "#base_directory", d[i]["accountName"], dict);
-        var node_id = createTreeNodeID(d[i]["accountName"]);
-        createNode(tree_id, tree_id, node_id, d[i]["accountName"], "last");
-        var child_id = createTreeNodeID(d[i]["children"][0]);
-        createNode(tree_id, "#"+node_id, child_id, d[i]["children"][0], "last");
-        //createNode(tree_id, "#base_directory", child_id, d[i]["children"][0], "last");
-        //console.log(dict[d[i]["accountName"]]["children"][0]);
+        recursiveTreeNode(tree_id, tree_id, d[i]["accountName"], dict);
     }
 }
 
 // Helper method createNode(parent, id, text, position).
 // Dynamically adds nodes to the jsTree. Position can be 'first' or 'last'.
 function createNode(tree_id, parent_node, new_node_id, new_node_text, position) {
-    console.log("creating node with parent node name: ", parent_node, " child node: ", new_node_id);
     $(tree_id).jstree('create_node', $(parent_node), { "text":new_node_text, "id":new_node_id }, position, false, false);
 }
 
 $(document).ready(function() {
     $('#account_balance').wrap('<div id="hide" style="display:none"/>');
     $('#internal_account').wrap('<div id="hide" style="display:none"/>');
-    //$('#external_account').wrap('<div id="hide" style="display:none"/>');
+    $('#external_account').wrap('<div id="hide" style="display:none"/>');
     var balance_table = $('#account_balance').DataTable({
         dom:
             "<'row'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6'f>>" +
@@ -371,25 +357,9 @@ $(document).ready(function() {
         "ajax": "/api/internal/?format=datatables",
         "columns": [
             {
-                "className":      'details-control',
-                "orderable":      false,
-                "data":           null,
-                "defaultContent": '',
-                "render": function () {
-                         return '<i class="fa fa-plus-square" aria-hidden="true"></i>';
-                },
-            },
-            {
                 "data": "accountName",
-                "className": "account-click",
             },
         ],
-
-        "rowCallback": function( row, data ) {
-            if (data["hasParents"] === true) {
-                $(row).hide();
-            }
-        },
 
         "initComplete": function( settings, json ) {
             renderTreeAccounts("#internal_jstree", internal_account_table.data());
@@ -423,64 +393,10 @@ $(document).ready(function() {
         ]
     } );
 
-    $('#internal_account tbody').on('click', 'td.details-control', function () {
-        var tr = $(this).closest('tr');
-        var tdi = tr.find("i.fa");
-        var row = internal_account_table.row( tr );
-
-        if ( row.child.isShown() ) {
-            // This row is already open - close it
-            row.child.hide();
-            tr.removeClass('shown');
-            tdi.first().removeClass('fa-minus-square');
-            tdi.first().addClass('fa-plus-square');
-        }
-        else {
-            // Open this row
-            row.child( showChildren( row.data()) ).show();
-            internal_account_static.clear().draw();
-            internal_account_balance.clear().draw();
-            for (var i=0; i < row.data()['children'].length; i++) {
-                var info_row = filterByName(row.data()['children'][i], internal_account_table.data());
-                internal_account_static.row.add(info_row);
-
-                var bal_rows = parseInstrument(filterByName(row.data()['children'][i], balance_table.data()));
-                for ( d in bal_rows ) {
-                    internal_account_balance.row.add(bal_rows[d]);
-                }
-            }
-            internal_account_static.draw();
-            internal_account_balance.draw();
-            tr.addClass('shown');
-            tdi.first().removeClass('fa-plus-square');
-            tdi.first().addClass('fa-minus-square');
-        }
-    } );
-
-    $('#internal_account tbody').on('click', 'td.account-click', function () {
-        var tr = $(this).closest('tr');
-        var row = internal_account_table.row( tr );
-        var data = JSON.parse(JSON.stringify(row.data()));
-        internal_account_static.clear().draw();
-        internal_account_static.row.add(data).draw();
-
-        internal_account_balance.clear().draw();
-        var bal_rows = parseInstrument(filterByName(row.data()["accountName"], balance_table.data()));
-        for ( d in bal_rows ) {
-            internal_account_balance.row.add(bal_rows[d]);
-        }
-        internal_account_balance.draw();
-    } );
-
     $('#internal_jstree').jstree({
         //'plugins': ["checkbox", "state"],
         //'plugins': ["search"],
         'core': {
-            //'data': [{
-            //    "id": "base_directory",
-            //        "text": "Internal Account List",
-            //        "children": []
-            //}],
             'data': [],
             'check_callback': true
         }
@@ -517,10 +433,22 @@ $(document).ready(function() {
         "columns": [
             {
                 "data": "accountName",
-                "className": "account-click",
             },
         ],
+
+        "initComplete": function( settings, json ) {
+            renderTreeAccounts("#external_jstree", external_account_table.data());
+        },
     } );
+
+    $('#external_jstree').jstree({
+        //'plugins': ["checkbox", "state"],
+        //'plugins': ["search"],
+        'core': {
+            'data': [],
+            'check_callback': true
+        }
+    });
 
     var external_account_static = $('#external_account_static').DataTable({
         "paging": false,
@@ -546,21 +474,21 @@ $(document).ready(function() {
         ]
     } );
 
-    $('#external_account tbody').on('click', 'td.account-click', function () {
-        var tr = $(this).closest('tr');
-        var row = external_account_table.row( tr );
-        var data = JSON.parse(JSON.stringify(row.data()));
+    $('#external_jstree').on("changed.jstree", function (e, data) {
+        var accountName = $('#external_jstree').jstree('get_selected', true)[0].text;
+        console.log("pulling account detail for ", accountName);
+        var data = filterByName(accountName, external_account_table.data());
+
         external_account_static.clear().draw();
         external_account_static.row.add(data).draw();
 
-        var balance_row = filterByName(row.data()["accountName"], balance_table.data());
         external_account_balance.clear().draw();
-        var bal_rows = parseInstrument(balance_row);
+        var bal_rows = parseInstrument(filterByName(accountName, balance_table.data()));
         for ( d in bal_rows ) {
             external_account_balance.row.add(bal_rows[d]);
         }
         external_account_balance.draw();
-    } );
+    });
 });
 
 </script>
