@@ -40,7 +40,7 @@ class AccountBalance(models.Model):
 
 class Transfer(models.Model):
     transferID = models.BigIntegerField()
-    time = models.BigIntegerField()
+    time = models.BigIntegerField(null=True)
     status = models.CharField(max_length=100)
     msg = models.CharField(max_length=100, blank=True)
     requestUuid = models.UUIDField()
