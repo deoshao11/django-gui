@@ -187,6 +187,21 @@ tr.shown td.details-control {
         <input id="end_time" type="datetime-local" name="end_time_field">
         <input type="submit" value="OK">
     </form>
+    <p></p>
+    <p></p>
+    <form action="" method="post">
+        {% csrf_token %}
+        <h4>Make Transfer</h4>
+        <label for="from_account">From Account: </label>
+        <input id="from_account" type="text" name="from_account_field">
+        <label for="to_account">To Account: </label>
+        <input id="to_account" type="text" name="to_account_field">
+        <label for="instrument">Instrument: </label>
+        <input id="instrument" type="text" name="instrument_field">
+        <label for="quantity">Quantity: </label>
+        <input id="quantity" type="number" name="quantity_field">
+        <input type="submit" value="OK">
+    </form>
 </div>
 
 <footer class="footer" style="margin-top: 25px;">
