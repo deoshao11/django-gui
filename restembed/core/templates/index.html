@@ -70,22 +70,21 @@ tr.shown td.details-control {
     </div>
 {% endif %}
 </div>
-<div class="row">
-    <div class="col-sm-12">
-            <table id="account_balance">
-                <thead>
-                    <tr>
-                        <th></th>
-                        <th>Account Name</th>
-                    </tr>
-                </thead>
-            </table>
-    </div>
-</div>
+
+<table id="account_balance">
+    <thead>
+        <tr>
+            <th></th>
+            <th>Account Name</th>
+        </tr>
+    </thead>
+</table>
+
 
 <div class="tab">
-  <button class="tablinks" onclick="openAccountView(event, 'internal')">Internal Accounts</button>
-  <button class="tablinks" onclick="openAccountView(event, 'external')">External Accounts</button>
+  <button id="internal_tab" class="tablinks" onclick="openTabView(event, 'internal')">Internal Accounts</button>
+  <button id="external_tab" class="tablinks" onclick="openTabView(event, 'external')">External Accounts</button>
+  <button id="transfer_tab" class="tablinks" onclick="openTabView(event, 'transfer')">Transfer</button>
 </div>
 
 <div id="internal" class="tabcontent">
@@ -94,7 +93,7 @@ tr.shown td.details-control {
             <div class="col-sm-12">
                 <div id="internal_leftcontent">
                     <div id="internal_jstree"></div>
-                    <table id="internal_account" class="table table-striped table-bordered">
+                    <table id="internal_account">
                         <thead>
                             <tr>
                                 <th>Account Name</th>
@@ -140,7 +139,7 @@ tr.shown td.details-control {
             <div class="col-sm-12">
                 <div id="external_leftcontent">
                     <div id="external_jstree"></div>
-                    <table id="external_account" class="table table-striped table-bordered">
+                    <table id="external_account">
                         <thead>
                             <tr>
                                 <th>Account Name</th>
@@ -178,6 +177,18 @@ tr.shown td.details-control {
     </div>
 </div>
 
+<div id="transfer" class="tabcontent">
+    <form action="" method="post">
+        {% csrf_token %}
+        <h4>Transfer Query</h4>
+        <label for="start_time">Start time: </label>
+        <input id="start_time" type="datetime-local" name="start_time_field">
+        <label for="end_time">End time: </label>
+        <input id="end_time" type="datetime-local" name="end_time_field">
+        <input type="submit" value="OK">
+    </form>
+</div>
+
 <footer class="footer" style="margin-top: 25px;">
     <div class="container">
         <p class="text-muted text-center">
@@ -188,7 +199,7 @@ tr.shown td.details-control {
 {% endblock %}
 {% block extra_js %}
 <script>
-function openAccountView(evt, accountName) {
+function openTabView(evt, accountName) {
   var i, tabcontent, tablinks;
   tabcontent = document.getElementsByClassName("tabcontent");
   for (i = 0; i < tabcontent.length; i++) {
@@ -316,6 +327,7 @@ $(document).ready(function() {
     $('#account_balance').wrap('<div id="hide" style="display:none"/>');
     $('#internal_account').wrap('<div id="hide" style="display:none"/>');
     $('#external_account').wrap('<div id="hide" style="display:none"/>');
+
     var balance_table = $('#account_balance').DataTable({
         dom:
             "<'row'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6'f>>" +
@@ -489,6 +501,8 @@ $(document).ready(function() {
         }
         external_account_balance.draw();
     });
+
+    document.getElementById("internal_tab").click();
 });
 
 </script>
