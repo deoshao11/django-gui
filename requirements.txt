@@ -6,4 +6,3 @@ djangorestframework-datatables
 requests
 jsonfield
 pycrypto
-dateutil
