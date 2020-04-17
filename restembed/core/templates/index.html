@@ -31,6 +31,9 @@ tr.shown td.details-control {
   font-size: 17px;
 }
 
+p.double {border-style: double;}
+p.solid {border-style: solid;}
+
 /* Change background color of buttons on hover */
 .tab button:hover {
   background-color: #ddd;
@@ -178,30 +181,37 @@ tr.shown td.details-control {
 </div>
 
 <div id="transfer" class="tabcontent">
-    <form action="" method="post">
-        {% csrf_token %}
-        <h4>Transfer Query</h4>
-        <label for="start_time">Start time: </label>
-        <input id="start_time" type="datetime-local" name="start_time_field">
-        <label for="end_time">End time: </label>
-        <input id="end_time" type="datetime-local" name="end_time_field">
-        <input type="submit" value="OK">
-    </form>
+    <h4>Create Transfer</h4>
+    <label for="from_account">From Account: </label>
+    <input id="from_account" type="text" name="from_account_field">
+    <label for="to_account">To Account: </label>
+    <input id="to_account" type="text" name="to_account_field">
+    <label for="instrument">Instrument: </label>
+    <input id="instrument" type="text" name="instrument_field">
+    <label for="quantity">Quantity: </label>
+    <input id="quantity" type="number" name="quantity_field">
     <p></p>
+    <button id="make_transfer">Create</button>
     <p></p>
-    <form action="" method="post">
-        {% csrf_token %}
-        <h4>Make Transfer</h4>
-        <label for="from_account">From Account: </label>
-        <input id="from_account" type="text" name="from_account_field">
-        <label for="to_account">To Account: </label>
-        <input id="to_account" type="text" name="to_account_field">
-        <label for="instrument">Instrument: </label>
-        <input id="instrument" type="text" name="instrument_field">
-        <label for="quantity">Quantity: </label>
-        <input id="quantity" type="number" name="quantity_field">
-        <input type="submit" value="OK">
-    </form>
+    <p class="double">
+    <h4>Transfer Query</h4>
+    <label for="start_time">Start time: </label>
+    <input id="start_time" type="datetime-local" name="start_time_field">
+    <label for="end_time">End time: </label>
+    <input id="end_time" type="datetime-local" name="end_time_field">
+
+    <button id="query_submit">Submit</button>
+    <table id="transfer_info" class="table table-striped table-bordered">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Time</th>
+                <th>Status</th>
+                <th>Message</th>
+            </tr>
+        </thead>
+    </table>
+    </p>
 </div>
 
 <footer class="footer" style="margin-top: 25px;">
@@ -288,14 +298,12 @@ function parseInstrument ( d ) {
         var row = {};
         row["instrument"] = x;
         row["balance"] = d["instruments"][x];
-        //console.log(row);
         result.push(row);
     }
     return result;
 }
 
 function filterByName ( name, d ) {
-    //console.log("filter by name with length", name, d.length);
     for (i=0; i<d.length; i++) {
         if(d[i]["accountName"] === name) {
             return d[i];
@@ -431,7 +439,6 @@ $(document).ready(function() {
 
     $('#internal_jstree').on("changed.jstree", function (e, data) {
         var accountName = $('#internal_jstree').jstree('get_selected', true)[0].text;
-        console.log("pulling account detail for ", accountName);
         var data = filterByName(accountName, internal_account_table.data());
 
         internal_account_static.clear().draw();
@@ -503,7 +510,6 @@ $(document).ready(function() {
 
     $('#external_jstree').on("changed.jstree", function (e, data) {
         var accountName = $('#external_jstree').jstree('get_selected', true)[0].text;
-        console.log("pulling account detail for ", accountName);
         var data = filterByName(accountName, external_account_table.data());
 
         external_account_static.clear().draw();
@@ -515,6 +521,50 @@ $(document).ready(function() {
             external_account_balance.row.add(bal_rows[d]);
         }
         external_account_balance.draw();
+    });
+
+    var transfer_table = $('#transfer_info').DataTable({
+        "paging": false,
+        dom:
+            "<'row'<'col-sm-12'f>>" +
+            "<'row'<'col-sm-12'tr>>" +
+            "<<'col-sm-12 col-md-7'p>>",
+
+        "columns": [
+            { "data": "transferID" },
+            { "data": "time" },
+            { "data": "status" },
+            { "data": "msg" },
+        ]
+    } );
+
+    const now = new Date();
+    now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+    document.getElementById('start_time').value = now.toISOString().slice(0, -1);
+    document.getElementById('end_time').value = now.toISOString().slice(0, -1);
+
+    var ajaxFunction = function() {
+        $.ajax({
+            url: "api/transfer",
+            type: "GET",
+            data: {
+                startTime: $("#start_time").val(),
+                endTime: $("#end_time").val(),
+            },
+            dataType: 'json',
+            contentType: 'application/json',
+            success: function(data) {
+                transfer_table.clear().draw();
+                for ( d in data["results"] ) {
+                    transfer_table.row.add(data["results"][d]);
+                }
+                transfer_table.draw();
+            }
+        });
+    };
+
+    $('#query_submit').click(function() {
+        ajaxFunction();
     });
 
     document.getElementById("internal_tab").click();

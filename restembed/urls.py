@@ -15,7 +15,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.conf.urls import url, include
-from .core.views import AccountBalanceViewSet, ExternalAccountViewSet, InternalAccountViewSet, index
+from .core.views import *
 
 from django.contrib.auth.views import LoginView, LogoutView
 from rest_framework import routers
@@ -24,6 +24,7 @@ router = routers.DefaultRouter()
 router.register(r'internal', InternalAccountViewSet, basename='internal_account')
 router.register(r'external', ExternalAccountViewSet, basename='external_account')
 router.register(r'balance', AccountBalanceViewSet, basename='account_balance')
+router.register(r'transfer', TransferViewSet, basename='transfer')
 
 urlpatterns = [
     url('^api/', include(router.urls)),

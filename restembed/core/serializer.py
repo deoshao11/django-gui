@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import AccountBalance, InternalAccount, ExternalAccount
+from .models import *
 
 
 class InternalAccountSerializer(serializers.ModelSerializer):
@@ -21,4 +21,10 @@ class AccountBalanceSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = AccountBalance
+        fields = '__all__'
+
+
+class TransferSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Transfer
         fields = '__all__'

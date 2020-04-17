@@ -36,3 +36,14 @@ class AccountBalance(models.Model):
 
     def __str__(self):
         return self.accountName
+
+
+class Transfer(models.Model):
+    transferID = models.BigIntegerField()
+    time = models.BigIntegerField()
+    status = models.CharField(max_length=100)
+    msg = models.CharField(max_length=100, blank=True)
+    requestUuid = models.UUIDField()
+
+    def __str__(self):
+        return self.transferID

@@ -6,25 +6,28 @@ import base64
 import requests
 import uuid
 
-from .serializer import AccountBalanceSerializer, ExternalAccountSerializer, InternalAccountSerializer
+from .serializer import *
 
-from .models import AccountBalance, ExternalAccount, InternalAccount
+from .models import *
 from Crypto.Cipher import AES
+import dateutil.parser
 
 def index(request):
     return render(request, 'index.html')
 
 
-def get_data_from_api_call(request, endpoint):
+def get_data_from_api_call(request, endpoint, params={}):
     username = request.user.username
     encrypted_username = get_encryption(username)
-    r = requests.get(settings.EXTERNAL_API_URL + endpoint, headers={'x-encrypted-username': encrypted_username},)
+    r = requests.get(settings.EXTERNAL_API_URL + endpoint,
+                     headers={'x-encrypted-username': encrypted_username}, params=params)
     json = r.json()
     request_uuid = uuid.uuid4()
     for i in range(len(json)):
         json[i]['requestUuid'] = request_uuid
+        if endpoint == 'transfer':
+            json[i]['transferID'] = json[i]['id']
     return json, request_uuid
-
 
 def get_internal_queryset(request):
     json, request_uuid = get_data_from_api_call(request, 'accounts/internal')
@@ -51,6 +54,19 @@ def get_balance_queryset(request):
         print(serializer.errors)
     serializer.save()
     return AccountBalance.objects.all().filter(requestUuid=request_uuid)
+
+
+def get_transfer_queryset(request):
+    start_time = int(dateutil.parser.parse(request.query_params.get('startTime')).timestamp() * 1000)
+    end_time = int(dateutil.parser.parse(request.query_params.get('endTime')).timestamp() * 1000)
+    print(start_time, end_time)
+    params = {'startTime': start_time, 'endTime': end_time}
+    json, request_uuid = get_data_from_api_call(request, 'transfer', params)
+    serializer = TransferSerializer(data=json, many=True)
+    if not serializer.is_valid():
+        print(serializer.errors)
+    serializer.save()
+    return Transfer.objects.all().filter(requestUuid=request_uuid)
 
 
 def get_encryption(username):
@@ -82,3 +98,10 @@ class AccountBalanceViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         return get_balance_queryset(self.request)
+
+
+class TransferViewSet(viewsets.ModelViewSet):
+    serializer_class = TransferSerializer
+
+    def get_queryset(self):
+        return get_transfer_queryset(self.request)
