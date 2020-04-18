@@ -192,6 +192,15 @@ p.solid {border-style: solid;}
     <input id="quantity" type="number" name="quantity_field">
     <p></p>
     <button id="make_transfer">Create</button>
+    <table id="transfer_request" class="table table-striped table-bordered">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Status</th>
+                <th>Message</th>
+            </tr>
+        </thead>
+    </table>
     <p></p>
     <p class="double">
     <h4>Transfer Query</h4>
@@ -538,12 +547,26 @@ $(document).ready(function() {
         ]
     } );
 
+    var transfer_request = $('#transfer_request').DataTable({
+        "paging": false,
+        dom:
+            "<'row'<'col-sm-12'f>>" +
+            "<'row'<'col-sm-12'tr>>" +
+            "<<'col-sm-12 col-md-7'p>>",
+
+        "columns": [
+            { "data": "transferID" },
+            { "data": "status" },
+            { "data": "msg" },
+        ]
+    } );
+
     const now = new Date();
     now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
     document.getElementById('start_time').value = now.toISOString().slice(0, -1);
     document.getElementById('end_time').value = now.toISOString().slice(0, -1);
 
-    var ajaxFunction = function() {
+    var transferQueryFunction = function() {
         $.ajax({
             url: "api/transfer",
             type: "GET",
@@ -563,8 +586,34 @@ $(document).ready(function() {
         });
     };
 
+    var transferCreationFunction = function() {
+        $.ajax({
+            url: "api/create_transfer",
+            type: "GET",
+            data: {
+                fromAccount: $("#from_account").val(),
+                toAccount: $("#to_account").val(),
+                instrument: $("#instrument").val(),
+                quantity: $("#quantity").val(),
+            },
+            dataType: 'json',
+            contentType: 'application/json',
+            success: function(data) {
+                transfer_request.clear().draw();
+                for ( d in data["results"] ) {
+                    transfer_request.row.add(data["results"][d]);
+                }
+                transfer_request.draw();
+            }
+        });
+    }
+
     $('#query_submit').click(function() {
-        ajaxFunction();
+        transferQueryFunction();
+    });
+
+    $('#make_transfer').click(function() {
+        transferCreationFunction();
     });
 
     document.getElementById("internal_tab").click();

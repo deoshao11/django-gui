@@ -2,6 +2,7 @@ from django.shortcuts import render
 from django.conf import settings
 from rest_framework import viewsets
 import base64
+import json
 
 import requests
 import uuid
@@ -69,6 +70,30 @@ def get_transfer_queryset(request):
     return Transfer.objects.all().filter(requestUuid=request_uuid)
 
 
+def create_transfer_queryset(request):
+    print(request.query_params)
+    from_account = request.query_params.get('fromAccount')
+    to_account = request.query_params.get('toAccount')
+    instrument = request.query_params.get('instrument')
+    qty = request.query_params.get('quantity')
+    data = {'fromAccountName': from_account, 'toAccountName': to_account, 'instrument': instrument, 'qty': qty}
+    print(data)
+
+    r = requests.post(settings.EXTERNAL_API_URL + 'transfer/', data=json.dumps(data), headers={'Content-Type': 'application/json'})
+    j= r.json()
+    print(j)
+    request_uuid = uuid.uuid4()
+
+    j['requestUuid'] = request_uuid
+    j['transferID'] = j['id']
+
+    serializer = TransferSerializer(data=j)
+    if not serializer.is_valid():
+        print(serializer.errors)
+    serializer.save()
+    return Transfer.objects.all().filter(requestUuid=request_uuid)
+
+
 def get_encryption(username):
     secret_key = settings.ENCRYPTION_SECRET_KEY.encode('utf-8')
     iv_key = settings.ENCRYPTION_IV_KEY.encode('utf-8')
@@ -105,3 +130,10 @@ class TransferViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         return get_transfer_queryset(self.request)
+
+
+class TransferRequestView(viewsets.ModelViewSet):
+    serializer_class = TransferSerializer
+
+    def get_queryset(self):
+        return create_transfer_queryset(self.request)

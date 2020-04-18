@@ -25,6 +25,7 @@ router.register(r'internal', InternalAccountViewSet, basename='internal_account'
 router.register(r'external', ExternalAccountViewSet, basename='external_account')
 router.register(r'balance', AccountBalanceViewSet, basename='account_balance')
 router.register(r'transfer', TransferViewSet, basename='transfer')
+router.register(r'create_transfer', TransferRequestView, basename='create_transfer')
 
 urlpatterns = [
     url('^api/', include(router.urls)),
